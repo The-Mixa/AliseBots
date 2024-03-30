@@ -64,7 +64,9 @@ def handle_dialog(req, res):
                 "Не хочу.",
                 "Не буду.",
                 "Отстань!",
-            ]
+            ],
+            'animal': "Слона"
+            
         }
         # Заполняем текст ответа
         res['response']['text'] = 'Привет! Купи слона!'
@@ -81,20 +83,25 @@ def handle_dialog(req, res):
     # то мы считаем, что пользователь согласился.
     # Подумайте, всё ли в этом фрагменте написано "красиво"?
     if 'YANDEX.CONFIRM' in req['request']['nlp']['intents']:
-        # Пользователь согласился, прощаемся.
-        res['response']['text'] = 'Слона можно найти на Яндекс.Маркете!'
-        res['response']['end_session'] = True
+        if sessionStorage[user_id]['condition'] == 'слона':
+            # Пользователь согласился, прощаемся.
+            res['response']['text'] = 'Слона можно найти на Яндекс.Маркете!'
+            sessionStorage[user_id]['animal'] = 'кролика'
+        else:
+            res['response']['text'] = 'Кролика можно найти на Яндекс.Маркете!'
+            req['session']['end_sesion'] = True
         return
 
     # Если нет, то убеждаем его купить слона!
     res['response']['text'] = \
-        f"Все говорят '{req['request']['original_utterance']}', а ты купи слона!"
+        f"Все говорят '{req['request']['original_utterance']}', а ты купи {sessionStorage[user_id]['animal']}!"
     res['response']['buttons'] = get_suggests(user_id)
 
 
 # Функция возвращает две подсказки для ответа.
 def get_suggests(user_id):
     session = sessionStorage[user_id]
+    animal = sessionStorate[user_id]['animal']
 
     # Выбираем две первые подсказки из массива.
     suggests = [
@@ -111,7 +118,7 @@ def get_suggests(user_id):
     if len(suggests) < 2:
         suggests.append({
             "title": "Ладно",
-            "url": "https://market.yandex.ru/search?text=слон",
+            "url": f"https://market.yandex.ru/search?text={animal[:-1]}",
             "hide": True
         })
 
